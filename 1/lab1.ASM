@@ -16,13 +16,6 @@ IDC_Remove      = 17
 section '.code' code readable writeable executable
 
 proc WinMain
-        stdcall       Window
-
-        invoke        ExitProcess, 0
-
-endp
-
-proc Window
         invoke        GetModuleHandle,0
         mov           [wc.hInstance],eax
         invoke        LoadCursor,0,IDC_ARROW
@@ -42,7 +35,8 @@ proc Window
         jmp           .msgLoop
 
 .EndProc:
-        ret
+        invoke        ExitProcess, 0
+
 endp
 
 proc WindowProc uses ebx esi edi, hWnd,wMsg,wParam,lParam
@@ -156,10 +150,11 @@ proc WindowProc uses ebx esi edi, hWnd,wMsg,wParam,lParam
         jmp           .EndProc
 
 .Open:
-        invoke        GetOpenFileName, ofn
+        invoke        GetOpenFileName, ofnRead
+        mov           [FileRead], szFileRead
         jmp           .EndProc
 .Save:
-        invoke        GetOpenFileName, ofn
+        invoke        GetOpenFileName, ofnWrite
         jmp           .EndProc
 
 .Code:
@@ -185,6 +180,15 @@ proc WindowProc uses ebx esi edi, hWnd,wMsg,wParam,lParam
 .nBytes                       dd      ?
 endp
 
+proc  ReadText
+
+
+
+.EndProc:
+        ret
+
+endp
+
 section '.data' data readable writeable
 
 wc                           WNDCLASS 0,WindowProc,0,0,NULL,NULL,NULL,COLOR_BTNFACE+1,NULL,_class
@@ -201,9 +205,11 @@ _ResultText                  du      'Результат',0
 _code                        du      'Шифрировать',0
 _decode                      du      'Дешифрировать',0
 _remove                      du      'Очистить',0
-szFileTxt                    du      256  dup 0
+szFileRead                   du      256  dup 0
+szFileWrite                  du      256  dup 0
 szFilterTxt                  du      'Txt files',0,'*.txt',0,0
-ofn                          OPENFILENAME sizeof.OPENFILENAME, 0,0, szFilterTxt,0,0,0,szFileTxt,260,0,0,0,0,OFN_ALLOWMULTISELECT+OFN_FILEMUSTEXIST+OFN_EXPLORER,0,0,0,0,0,0
+ofnRead                      OPENFILENAME sizeof.OPENFILENAME, 0,0, szFilterTxt,0,0,0,szFileRead,260,0,0,0,0,OFN_ALLOWMULTISELECT+OFN_FILEMUSTEXIST+OFN_EXPLORER,0,0,0,0,0,0
+ofnWrite                     OPENFILENAME sizeof.OPENFILENAME, 0,0, szFilterTxt,0,0,0,szFileWrite,260,0,0,0,0,OFN_ALLOWMULTISELECT+OFN_FILEMUSTEXIST+OFN_EXPLORER,0,0,0,0,0,0
 msg                          MSG
 client                       RECT
 editKey                      dd      ?
@@ -218,6 +224,7 @@ butnCode                     dd      ?
 butnDecode                   dd      ?
 butnRemove                   dd      ?
 butnFile                     dd      ?
+FileRead                     dd      ?
 
 section '.idata' data import readable writeable
 
@@ -260,10 +267,10 @@ resource menus,\
            IDR_MENU,LANG_ENGLISH+SUBLANG_DEFAULT,main_menu
 
   menu main_menu
-       menuitem '&Encryption method',0,MFR_POPUP
-                menuitem '&Сolumn cipher',IDM_ColCipher
-                menuitem 'Vigenere cipher',IDM_VigCipher,MFR_END
-       menuitem '&File',0, MFR_POPUP+MFR_END
-                menuitem '&Open',IDM_Open
-                menuitem '&Save',IDM_Save,MFR_END
+       menuitem '&Метод шифрования',0,MFR_POPUP
+                menuitem '&Столбцовый метод',IDM_ColCipher
+                menuitem 'Метод Вижнера',IDM_VigCipher,MFR_END
+       menuitem '&Файл',0, MFR_POPUP+MFR_END
+                menuitem '&Открыть',IDM_Open
+                menuitem '&Сохранить',IDM_Save,MFR_END
 
