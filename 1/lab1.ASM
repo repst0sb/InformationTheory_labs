@@ -170,7 +170,10 @@ proc WindowProc uses ebx esi edi, hWnd,wMsg,wParam,lParam
         invoke        WriteFile, eax , bom, 2,.nBytes, NULL
         pop           eax
         shl           ebx, 1
+        push          eax
         invoke        WriteFile, eax, edi,ebx , .nBytes, NULL
+        pop           eax
+        invoke        CloseHandle, eax
         jmp           .EndProc
 
 .Code:
